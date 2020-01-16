@@ -1,0 +1,1 @@
+module.exports = parseStringToArray = (stringToArray) => stringToArray.split(',').map(string => string.trim())
