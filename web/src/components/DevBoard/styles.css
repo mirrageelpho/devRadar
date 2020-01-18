@@ -1,0 +1,50 @@
+li.devBoard {
+    background-color: white;
+    box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 3px;
+}
+
+li.devBoard header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+li.devBoard header img {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+}
+
+li.devBoard .userInfo{
+    margin-left: 10px;
+}
+
+li.devBoard p {
+    color: #666;
+    font-size: 14px;
+    line-height: 20px;
+    margin: 10px 0;
+}
+li.devBoard a {
+    text-decoration: none;
+    font-size: 14px;
+    color: #8e4dff;
+}
+
+li.devBoard a:hover {
+    color: #8e4dff;
+}
+
+.userInfo strong {
+    display: block;
+    font-size: 16px;
+    color: #333;
+}
+
+.userInfo span {
+    font-size: 13px;
+    color: #999;
+    margin-top: 2px;
+}
