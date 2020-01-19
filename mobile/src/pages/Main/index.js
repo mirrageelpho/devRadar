@@ -3,15 +3,26 @@ import { StyleSheet, Image, View, Text, TextInput, TouchableOpacity, ActivityInd
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
+
+//services
 import api from '../../services/http'
+import { connect, disconnect, subscribeToNewsDevs } from '../../services/websocket'
 
 
 //Component
 function Main({ navigation }) {
+
+
     const [devs, setDevs] = useState([])
     const [techs, setTechs] = useState('')
     const [currentRegion, setCurrentRegion] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
+
+    function handleSockerConnection(params) {
+        disconnect()
+        connect(params)
+    }
+
     useEffect(() => {
         async function loadInitialPosition() {
             setIsLoading(true)
@@ -32,26 +43,37 @@ function Main({ navigation }) {
             }
             setIsLoading(false)
         }
+
         loadInitialPosition()
+
     }, [])
+
+    //Subscript to new devs
+    useEffect(() => {
+        subscribeToNewsDevs(dev => setDevs([...devs, dev]))
+    }, [devs])
+
     if (!currentRegion) {
         return null;
     }
 
     async function handleSearchDevs() {
         setIsLoading(true)
-        const { latitude, longitude } = currentRegion
-        const response = await api.get('/search', {
 
-            params:{
-                latitude,
-                longitude,
-                techs: techs.toLowerCase()
-            }
-        })
+        const { latitude, longitude } = currentRegion
+
+        const params = {
+            latitude,
+            longitude,
+            techs: techs.toLowerCase()
+        }
+
+        const response = await api.get('/search', { params })
+
         setIsLoading(false)
-        console.log('response ==>', response.data)
         setDevs(response.data)
+        handleSockerConnection(params)
+
     }
 
     function handleRegionChange(region) {
@@ -61,18 +83,18 @@ function Main({ navigation }) {
 
 
     return (
-        <>                  
+        <>
             <MapView
                 onRegionChangeComplete={handleRegionChange}
                 initialRegion={currentRegion}
                 style={styles.mapStyle}>
                 {devs.map(dev => (
-                    <Marker 
-                    key={dev._id}
-                    coordinate={{
-                        longitude: dev.location.coordinates[0],
-                        latitude: dev.location.coordinates[1]
-                    }} >
+                    <Marker
+                        key={dev._id}
+                        coordinate={{
+                            longitude: dev.location.coordinates[0],
+                            latitude: dev.location.coordinates[1]
+                        }} >
                         <View style={styles.avatar_shadow}>
                             <Image style={styles.avatar} source={{ uri: dev.avatar_url }} />
                         </View>
@@ -81,7 +103,7 @@ function Main({ navigation }) {
                         }}>
                             <View style={styles.calout}>
                                 <Text style={styles.devName}>{dev.name}</Text>
-                                <Text style={styles.devTechs}>{dev.techs.map(tech=>tech[0].toUpperCase() + tech.slice(1)).join(', ')}</Text>
+                                <Text style={styles.devTechs}>{dev.techs.map(tech => tech[0].toUpperCase() + tech.slice(1)).join(', ')}</Text>
                                 <Text style={styles.devBio}>{dev.bio}</Text>
                             </View>
                         </Callout>
@@ -97,10 +119,10 @@ function Main({ navigation }) {
                     onChangeText={setTechs}
                 />
                 <TouchableOpacity style={styles.iconSearch} onPress={() => { handleSearchDevs() }}>
-                    {isLoading ? 
-                    <ActivityIndicator size="small" color="#fff" /> 
-                    :
-                    <MaterialIcons name="my-location" size={20} color="#fff" />
+                    {isLoading ?
+                        <ActivityIndicator size="small" color="#fff" />
+                        :
+                        <MaterialIcons name="my-location" size={20} color="#fff" />
                     }
                 </TouchableOpacity>
             </View>
